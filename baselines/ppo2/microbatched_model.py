@@ -46,7 +46,7 @@ class MicrobatchedModel(Model):
         # originally: advs = returns - values
         advs = returns
         if self.use_actor_critic:
-            advs = advs - values
+            advs = returns - values
 
         # Normalize the advantages
         advs = (advs - advs.mean()) / (advs.std() + 1e-8)
