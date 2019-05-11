@@ -142,10 +142,6 @@ class Model(object):
         # originally: advs = returns - values
         advs = returns
 
-        # TODO
-        if not self.use_actor_critic:
-            print("using only returns")
-
         if self.use_actor_critic:
             advs = advs - values
 
