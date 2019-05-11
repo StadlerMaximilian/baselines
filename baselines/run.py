@@ -61,6 +61,9 @@ def train(args, extra_args):
     alg_kwargs = get_learn_function_defaults(args.alg, env_type)
     alg_kwargs.update(extra_args)
 
+    if args.alg is "ppo2":
+        alg_kwargs.update(args.use_actor_critic)
+
     env = build_env(args)
     if args.save_video_interval != 0:
         env = VecVideoRecorder(env, osp.join(logger.get_dir(), "videos"), record_video_trigger=lambda x: x % args.save_video_interval == 0, video_length=args.save_video_length)
@@ -71,8 +74,8 @@ def train(args, extra_args):
         if alg_kwargs.get('network') is None:
             alg_kwargs['network'] = get_default_network(env_type)
 
-    print('Training {} on {}:{} with arguments \n{} with {}'.format(args.alg, env_type, env_id, alg_kwargs,
-                                                                    args.use_actor_critic))
+    print('Training {} on {}:{} with arguments \n{}'.format(args.alg, env_type, env_id, alg_kwargs))
+    print("using actor-critic scheme: {}".format(args.use_actor_critic))
 
     model = learn(
         env=env,
@@ -200,6 +203,12 @@ def main(args):
     arg_parser = common_arg_parser()
     args, unknown_args = arg_parser.parse_known_args(args)
     extra_args = parse_cmdline_kwargs(unknown_args)
+
+    print("debugging")
+    print(args)
+    print(unknown_args)
+    print(extra_args)
+    print("\n\n")
 
     if MPI is None or MPI.COMM_WORLD.Get_rank() == 0:
         rank = 0
