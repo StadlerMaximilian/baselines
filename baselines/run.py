@@ -61,7 +61,8 @@ def train(args, extra_args):
     alg_kwargs = get_learn_function_defaults(args.alg, env_type)
     alg_kwargs.update(extra_args)
 
-    if args.alg is 'ppo2':
+    print(args.alg)
+    if args.alg == 'ppo2':
         alg_kwargs.update({'use_actor_critic': not args.without_actor_critic})
         print(alg_kwargs['use_actor_critic'])
 
