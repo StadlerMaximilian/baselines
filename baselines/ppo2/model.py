@@ -55,6 +55,7 @@ class Model(object):
         self.LR = LR = tf.placeholder(tf.float32, [])
         # Cliprange
         self.CLIPRANGE = CLIPRANGE = tf.placeholder(tf.float32, [])
+
         if not use_actor_critic:
             print("assemble model without using actor_critic!!")
         self.use_actor_critic = use_actor_critic
@@ -140,6 +141,11 @@ class Model(object):
         # for simulation: allow possibility of only using returns for updates
         # originally: advs = returns - values
         advs = returns
+
+        # TODO
+        if not self.use_actor_critic:
+            print("using only returns")
+
         if self.use_actor_critic:
             advs = advs - values
 

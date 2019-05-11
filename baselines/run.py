@@ -61,10 +61,9 @@ def train(args, extra_args):
     alg_kwargs = get_learn_function_defaults(args.alg, env_type)
     alg_kwargs.update(extra_args)
 
-    print(args.alg)
     if args.alg == 'ppo2':
         alg_kwargs.update({'use_actor_critic': not args.without_actor_critic})
-        print(alg_kwargs['use_actor_critic'])
+        print('alg_kwargs: {}'.format(alg_kwargs))
 
     env = build_env(args)
     if args.save_video_interval != 0:
@@ -205,6 +204,7 @@ def main(args):
     args, unknown_args = arg_parser.parse_known_args(args)
     extra_args = parse_cmdline_kwargs(unknown_args)
 
+    # TODO
     print("debugging")
     print(args)
     print(unknown_args)
