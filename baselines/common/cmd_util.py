@@ -19,6 +19,7 @@ from baselines.common.vec_env.dummy_vec_env import DummyVecEnv
 from baselines.common import retro_wrappers
 from baselines.common.wrappers import ClipActionsWrapper
 
+
 def make_vec_env(env_id, env_type, num_env, seed,
                  wrapper_kwargs=None,
                  env_kwargs=None,
@@ -36,6 +37,7 @@ def make_vec_env(env_id, env_type, num_env, seed,
     mpi_rank = MPI.COMM_WORLD.Get_rank() if MPI else 0
     seed = seed + 10000 * mpi_rank if seed is not None else None
     logger_dir = logger.get_dir()
+
     def make_thunk(rank, initializer=None):
         return lambda: make_env(
             env_id=env_id,
@@ -89,7 +91,6 @@ def make_env(env_id, env_type, mpi_rank=0, subrank=0, seed=None, reward_scale=1.
                   logger_dir and os.path.join(logger_dir, str(mpi_rank) + '.' + str(subrank)),
                   allow_early_resets=True)
 
-
     if env_type == 'atari':
         env = wrap_deepmind(env, **wrapper_kwargs)
     elif env_type == 'retro':
@@ -122,6 +123,7 @@ def make_mujoco_env(env_id, seed, reward_scale=1.0):
         env = RewardScaler(env, reward_scale)
     return env
 
+
 def make_robotics_env(env_id, seed, rank=0):
     """
     Create a wrapped, monitored gym.Env for MuJoCo.
@@ -135,12 +137,14 @@ def make_robotics_env(env_id, seed, rank=0):
     env.seed(seed)
     return env
 
+
 def arg_parser():
     """
     Create an empty argparse.ArgumentParser.
     """
     import argparse
     return argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
 
 def atari_arg_parser():
     """
@@ -149,9 +153,11 @@ def atari_arg_parser():
     print('Obsolete - use common_arg_parser instead')
     return common_arg_parser()
 
+
 def mujoco_arg_parser():
     print('Obsolete - use common_arg_parser instead')
     return common_arg_parser()
+
 
 def common_arg_parser():
     """
@@ -171,7 +177,9 @@ def common_arg_parser():
     parser.add_argument('--save_video_interval', help='Save video every x steps (0 = disabled)', default=0, type=int)
     parser.add_argument('--save_video_length', help='Length of recorded video. Default: 200', default=200, type=int)
     parser.add_argument('--play', default=False, action='store_true')
+    parser.add_argument('--use_actor_critic', default=True, type=bool)
     return parser
+
 
 def robotics_arg_parser():
     """

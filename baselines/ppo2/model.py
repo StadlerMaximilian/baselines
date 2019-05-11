@@ -11,6 +11,7 @@ try:
 except ImportError:
     MPI = None
 
+
 class Model(object):
     """
     We use this object to :
@@ -25,7 +26,8 @@ class Model(object):
     - Save load the model
     """
     def __init__(self, *, policy, ob_space, ac_space, nbatch_act, nbatch_train,
-                nsteps, ent_coef, vf_coef, max_grad_norm, mpi_rank_weight=1, comm=None, microbatch_size=None):
+                 nsteps, ent_coef, vf_coef, max_grad_norm, mpi_rank_weight=1, comm=None, microbatch_size=None,
+                 use_actor_critic=True):
         self.sess = sess = get_session()
 
         if MPI is not None and comm is None:
@@ -53,6 +55,7 @@ class Model(object):
         self.LR = LR = tf.placeholder(tf.float32, [])
         # Cliprange
         self.CLIPRANGE = CLIPRANGE = tf.placeholder(tf.float32, [])
+        self.use_actor_critic = use_actor_critic
 
         neglogpac = train_model.pd.neglogp(A)
 
@@ -115,7 +118,6 @@ class Model(object):
         self.loss_names = ['policy_loss', 'value_loss', 'policy_entropy', 'approxkl', 'clipfrac']
         self.stats_list = [pg_loss, vf_loss, entropy, approxkl, clipfrac]
 
-
         self.train_model = train_model
         self.act_model = act_model
         self.step = act_model.step
@@ -128,25 +130,29 @@ class Model(object):
         initialize()
         global_variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="")
         if MPI is not None:
-            sync_from_root(sess, global_variables, comm=comm) #pylint: disable=E1101
+            sync_from_root(sess, global_variables, comm=comm)  #pylint: disable=E1101
 
     def train(self, lr, cliprange, obs, returns, masks, actions, values, neglogpacs, states=None):
         # Here we calculate advantage A(s,a) = R + yV(s') - V(s)
         # Returns = R + yV(s')
-        advs = returns - values
+        # for simulation: allow possibility of only using returns for updates
+        # originally: advs = returns - values
+        advs = returns
+        if self.use_actor_critic:
+            advs = advs - values
 
         # Normalize the advantages
         advs = (advs - advs.mean()) / (advs.std() + 1e-8)
 
         td_map = {
-            self.train_model.X : obs,
-            self.A : actions,
-            self.ADV : advs,
-            self.R : returns,
-            self.LR : lr,
-            self.CLIPRANGE : cliprange,
-            self.OLDNEGLOGPAC : neglogpacs,
-            self.OLDVPRED : values
+            self.train_model.X: obs,
+            self.A: actions,
+            self.ADV: advs,
+            self.R: returns,
+            self.LR: lr,
+            self.CLIPRANGE: cliprange,
+            self.OLDNEGLOGPAC: neglogpacs,
+            self.OLDVPRED: values
         }
         if states is not None:
             td_map[self.train_model.S] = states

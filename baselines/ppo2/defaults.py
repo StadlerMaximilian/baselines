@@ -12,6 +12,7 @@ def mujoco():
         value_network='copy'
     )
 
+
 def atari():
     return dict(
         nsteps=128, nminibatches=4,
@@ -20,6 +21,7 @@ def atari():
         lr=lambda f : f * 2.5e-4,
         cliprange=0.1,
     )
+
 
 def retro():
     return atari()

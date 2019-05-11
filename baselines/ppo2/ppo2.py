@@ -18,11 +18,12 @@ def constfn(val):
         return val
     return f
 
+
 def learn(*, network, env, total_timesteps, eval_env = None, seed=None, nsteps=2048, ent_coef=0.0, lr=3e-4,
-            vf_coef=0.5,  max_grad_norm=0.5, gamma=0.99, lam=0.95,
-            log_interval=10, nminibatches=4, noptepochs=4, cliprange=0.2,
-            save_interval=0, load_path=None, model_fn=None, update_fn=None, init_fn=None, mpi_rank_weight=1, comm=None, **network_kwargs):
-    '''
+          vf_coef=0.5,  max_grad_norm=0.5, gamma=0.99, lam=0.95,
+          log_interval=10, nminibatches=4, noptepochs=4, cliprange=0.2, use_actor_critic=True,
+          save_interval=0, load_path=None, model_fn=None, update_fn=None, init_fn=None, mpi_rank_weight=1, comm=None, **network_kwargs):
+    """
     Learn policy using PPO algorithm (https://arxiv.org/abs/1707.06347)
 
     Parameters:
@@ -70,19 +71,27 @@ def learn(*, network, env, total_timesteps, eval_env = None, seed=None, nsteps=2
 
     load_path: str                    path to load the model from
 
+    use_actor_critic: bool            Flag for allowing disabling the actor-critic-style training, i.e. training only
+                                      on rewards for ablation studies testing the effect of PPO alone (i.e. without
+                                      actor-critic)
+
     **network_kwargs:                 keyword arguments to the policy / network builder. See baselines.common/policies.py/build_policy and arguments to a particular type of network
                                       For instance, 'mlp' network architecture has arguments num_hidden and num_layers.
 
 
 
-    '''
+    """
 
     set_global_seeds(seed)
 
-    if isinstance(lr, float): lr = constfn(lr)
-    else: assert callable(lr)
-    if isinstance(cliprange, float): cliprange = constfn(cliprange)
-    else: assert callable(cliprange)
+    if isinstance(lr, float):
+        lr = constfn(lr)
+    else:
+        assert callable(lr)
+    if isinstance(cliprange, float):
+        cliprange = constfn(cliprange)
+    else:
+        assert callable(cliprange)
     total_timesteps = int(total_timesteps)
 
     policy = build_policy(env, network, **network_kwargs)
@@ -105,15 +114,15 @@ def learn(*, network, env, total_timesteps, eval_env = None, seed=None, nsteps=2
         model_fn = Model
 
     model = model_fn(policy=policy, ob_space=ob_space, ac_space=ac_space, nbatch_act=nenvs, nbatch_train=nbatch_train,
-                    nsteps=nsteps, ent_coef=ent_coef, vf_coef=vf_coef,
-                    max_grad_norm=max_grad_norm, comm=comm, mpi_rank_weight=mpi_rank_weight)
+                     nsteps=nsteps, ent_coef=ent_coef, vf_coef=vf_coef, use_actor_critic=use_actor_critic,
+                     max_grad_norm=max_grad_norm, comm=comm, mpi_rank_weight=mpi_rank_weight)
 
     if load_path is not None:
         model.load(load_path)
     # Instantiate the runner object
     runner = Runner(env=env, model=model, nsteps=nsteps, gamma=gamma, lam=lam)
     if eval_env is not None:
-        eval_runner = Runner(env = eval_env, model = model, nsteps = nsteps, gamma = gamma, lam= lam)
+        eval_runner = Runner(env=eval_env, model=model, nsteps=nsteps, gamma=gamma, lam=lam)
 
     epinfobuf = deque(maxlen=100)
     if eval_env is not None:
@@ -217,6 +226,8 @@ def learn(*, network, env, total_timesteps, eval_env = None, seed=None, nsteps=2
 
     return model
 # Avoid division error when calculate the mean (in our case if epinfo is empty returns np.nan, not return an error)
+
+
 def safemean(xs):
     return np.nan if len(xs) == 0 else np.mean(xs)
 
