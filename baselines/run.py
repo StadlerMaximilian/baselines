@@ -62,7 +62,8 @@ def train(args, extra_args):
     alg_kwargs.update(extra_args)
 
     if args.alg is "ppo2":
-        alg_kwargs.update(args.use_actor_critic)
+        alg_kwargs.update({'use_actor_critic': not args.without_actor_critic})
+        print(alg_kwargs['use_actor_critic'])
 
     env = build_env(args)
     if args.save_video_interval != 0:

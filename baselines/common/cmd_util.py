@@ -180,7 +180,8 @@ def common_arg_parser():
     parser.add_argument('--save_video_interval', help='Save video every x steps (0 = disabled)', default=0, type=int)
     parser.add_argument('--save_video_length', help='Length of recorded video. Default: 200', default=200, type=int)
     parser.add_argument('--play', default=False, action='store_true')
-    parser.add_argument('--use_actor_critic', default=True, type=bool, help="flag for actor-critic-scheme")
+    parser.add_argument('--without_actor_critic', default=False, type=bool, action='store_true',
+                        help="flag for actor-critic-scheme")
     return parser
 
 
