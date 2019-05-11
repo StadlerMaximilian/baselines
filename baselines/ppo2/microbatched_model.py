@@ -14,6 +14,8 @@ class MicrobatchedModel(Model):
 
         self.nmicrobatches = nbatch_train // microbatch_size
         self.microbatch_size = microbatch_size
+        if not use_actor_critic:
+            print("assemble model without using actor_critic!!")
         self.use_actor_critic = use_actor_critic
         assert nbatch_train % microbatch_size == 0, \
             'microbatch_size ({}) should divide nbatch_train ({}) evenly'.format(microbatch_size, nbatch_train)
