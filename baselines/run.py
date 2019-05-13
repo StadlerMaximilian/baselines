@@ -214,6 +214,7 @@ def main(args):
     model, env = train(args, extra_args)
 
     if args.save_path is not None and rank == 0:
+        print("saving model to {}".format(args.save_path))
         save_path = osp.expanduser(args.save_path)
         model.save(save_path)
 
